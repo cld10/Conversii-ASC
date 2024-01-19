@@ -1,0 +1,162 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Conversii
+{
+    internal class Program
+    {
+        static void Main()
+        {
+            Console.WriteLine("Introduceti numarul in virgula fixa: ");
+            string n = Console.ReadLine();
+
+            Console.WriteLine("Introduceti baza 1: ");
+            int b1 = int.Parse(Console.ReadLine());
+
+            Console.WriteLine("Introduceti baza 2: ");
+            int b2 = int.Parse(Console.ReadLine());
+
+            string result = ConvertBase(n, b1, b2);
+
+            Console.WriteLine($"Rezultatul: {result}");
+        }
+
+        static string ConvertBase(string n, int b1, int b2)
+        {
+           
+            bool isNegative = false;
+            if (n[0] == '-')
+            {
+                isNegative = true;
+                n = n.Substring(1);
+            }
+
+            double decimalValue = ConvertToDecimal(n, b1);
+
+            string result = ConvertFromDecimal(decimalValue, b2);
+            if (isNegative)
+            {
+                result = "-" + result;
+            }
+
+            return result;
+        }
+
+        static double ConvertToDecimal(string n, int b1)
+        {
+            double result = 0;
+
+            int integerPartEndIndex = n.IndexOf('.');
+            if (integerPartEndIndex == -1)
+            {
+                integerPartEndIndex = n.Length;
+            }
+
+            for (int i = 0; i < integerPartEndIndex; i++)
+            {
+                char digit = n[i];
+                int digitValue = CharToDigitValue(digit);
+
+                result = result * b1 + digitValue;
+            }
+
+            if (integerPartEndIndex < n.Length - 1)
+            {
+                double fractionalMultiplier = 1.0 / b1;
+
+                for (int i = integerPartEndIndex + 1; i < n.Length; i++)
+                {
+                    char digit = n[i];
+                    int digitValue = CharToDigitValue(digit);
+
+                    result += digitValue * fractionalMultiplier;
+                    fractionalMultiplier /= b1;
+                }
+            }
+
+            return result;
+        }
+
+        static string ConvertFromDecimal(double decimalValue, int b2)
+        {
+            string result = "";
+
+            int integerPart = (int)decimalValue;
+            double fractionalPart = decimalValue - integerPart;
+
+            result = ConvertIntegerPart(integerPart, b2);
+
+            if (fractionalPart > 0)
+            {
+                result += ".";
+                result += ConvertFractionalPart(fractionalPart, b2);
+            }
+
+            return result == "" ? "0" : result;
+        }
+
+        static string ConvertFractionalPart(double fractionalPart, int b2)
+        {
+            const int maxFractionalDigits = 8;
+            string result = "";
+
+            for (int i = 0; i < maxFractionalDigits; i++)
+            {
+                fractionalPart *= b2;
+                int digit = (int)fractionalPart;
+                fractionalPart -= digit;
+
+                result += DigitValueToChar(digit);
+            }
+
+            return result;
+        }
+        static string ConvertIntegerPart(int integerPart, int b2)
+        {
+            if (integerPart == 0)
+            {
+                return "0";
+            }
+
+            string result = "";
+
+            while (integerPart > 0)
+            {
+                int remainder = integerPart % b2;
+                char digit = DigitValueToChar(remainder);
+                result = digit + result;
+
+                integerPart /= b2;
+            }
+
+            return result;
+        }
+        static int CharToDigitValue(char digit)
+        {
+            if (Char.IsDigit(digit))
+            {
+                return int.Parse(digit.ToString());
+            }
+            else
+            {
+               
+                return char.ToUpper(digit) - 'A' + 10;
+            }
+        }
+
+        static char DigitValueToChar(int digitValue)
+        {
+            if (digitValue < 10)
+            {
+                return digitValue.ToString()[0];
+            }
+            else
+            {
+                return (char)('A' + digitValue - 10);
+            }
+        }
+    }
+}
